@@ -1,23 +1,26 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import * as faceapi from 'face-api.js';
+import ImageCropper from '../ImageCropper/ImageCropper'; // Импортируйте ваш компонент ImageCropper
 
 const FaceDetection = () => {
+  const [imageSrc, setImageSrc] = useState<string | null>(null);
+  const [detections, setDetections] = useState<any[]>([]);
+  const [showCropper, setShowCropper] = useState<boolean>(false); // Состояние для управления отображением Cropper
+
   useEffect(() => {
     const loadModels = async () => {
       await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
-      await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
-      await faceapi.nets.faceRecognitionNet.loadFromUri('/models');
     };
 
     loadModels();
   }, []);
 
   const detectFaces = async (imageElement: HTMLImageElement) => {
-    const detections = await faceapi.detectAllFaces(
+    const detectedFaces = await faceapi.detectAllFaces(
       imageElement,
       new faceapi.TinyFaceDetectorOptions(),
     );
-    console.log(detections); // Здесь вы получите координаты bounding box'ов
+    setDetections(detectedFaces);
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -25,14 +28,27 @@ const FaceDetection = () => {
     if (file) {
       const img = document.createElement('img');
       img.src = URL.createObjectURL(file);
-      img.onload = () => detectFaces(img);
+      img.onload = () => {
+        setImageSrc(img.src);
+        detectFaces(img);
+        setShowCropper(true); // Показываем Cropper после загрузки изображения
+      };
     }
+  };
+
+  const handleCropComplete = (croppedImage: string) => {
+    // Здесь вы можете сохранить обрезанное изображение или использовать его в дальнейшем
+    console.log('Обрезанное изображение:', croppedImage);
+    setShowCropper(false); // Скрываем Cropper после обрезки
   };
 
   return (
     <div>
       <input type='file' accept='image/*' onChange={handleImageUpload} />
-      {/* Здесь можно добавить элемент <img> для отображения загруженного изображения */}
+      {showCropper && imageSrc && (
+        <ImageCropper imageSrc={imageSrc} onCropComplete={handleCropComplete} />
+      )}
+      {/* Здесь можно добавить код для отображения bounding box'ов и других функций */}
     </div>
   );
 };
