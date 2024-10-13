@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import ImageUploader from './components/ImageUploader/ImageUploader';
+import FaceDetection from './components/FaceDetection/FaceDetection';
 
 const App: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -22,6 +23,10 @@ const App: React.FC = () => {
           <img src={selectedImage} alt='Uploaded' style={{ maxWidth: '100%', height: 'auto' }} />
         </div>
       )}
+      <div>
+        <h1>Редактор фотографий с обнаружением лиц</h1>
+        <FaceDetection />
+      </div>
     </div>
   );
 };
